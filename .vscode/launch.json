@@ -1,0 +1,19 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Loggy CLI",
+            "type": "go",
+            "request": "launch",
+            "mode": "auto",
+            "program": "${workspaceFolder}/cmd/loggy-cli/main.go",
+            "args": [
+                "ingest",
+                "${workspaceFolder}/local/logs-example/"
+            ],
+            "env": {},
+            "envFile": "",
+            "showLog": true
+        }
+    ]
+}
