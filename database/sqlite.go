@@ -92,3 +92,26 @@ func (s *SQLiteDB) InsertLogEntries(entries []entity.LogEntry) error {
 
 	return nil
 }
+
+func (s *SQLiteDB) GetLogEntries(page int, pageSize int) ([]entity.LogEntry, error) {
+	rows, err := s.db.Query(`
+		SELECT timestamp, app_name, filename, level, content, raw
+		FROM log_entries
+		ORDER BY timestamp ASC
+		LIMIT ? OFFSET ?;
+	`, pageSize, (page-1)*pageSize)
+	if err != nil {
+		return nil, err
+	}
+
+	entries := make([]entity.LogEntry, 0)
+	for rows.Next() {
+		var entry entity.LogEntry
+		if err := rows.Scan(&entry.Timestamp, &entry.AppName, &entry.Filename, &entry.Level, &entry.Content, &entry.Raw); err != nil {
+			return nil, err
+		}
+		entries = append(entries, entry)
+	}
+
+	return entries, nil
+}

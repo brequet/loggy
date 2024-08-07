@@ -16,12 +16,12 @@ const (
 )
 
 type LogEntry struct {
-	Timestamp time.Time
-	Level     LogLevel
-	Content   string
-	AppName   string
-	Filename  string
-	Raw       string
+	Timestamp time.Time `json:"timestamp"`
+	Level     LogLevel  `json:"level"`
+	Content   string    `json:"content"`
+	AppName   string    `json:"app_name"`
+	Filename  string    `json:"filename"`
+	Raw       string    `json:"raw"`
 }
 
 type LogFormat struct {

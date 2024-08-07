@@ -1,13 +1,9 @@
 package cli
 
 import (
-	"fmt"
 	"log/slog"
 	"os"
 
-	"github.com/brequet/loggy/database"
-	"github.com/brequet/loggy/ingester"
-	"github.com/brequet/loggy/parser"
 	"github.com/spf13/cobra"
 )
 
@@ -33,24 +29,7 @@ func NewRootCommand() *cobra.Command {
 	rootCmd.PersistentFlags().BoolVar(&debug, "debug", false, "Enable debug mode")
 
 	rootCmd.AddCommand(newIngestCommand())
+	rootCmd.AddCommand(newServeCommand())
 
 	return rootCmd
-}
-
-func initializeServices() (*ingester.Ingester, error) {
-	db, err := database.NewSQLiteDB("loggy.db")
-	if err != nil {
-		return nil, fmt.Errorf("failed to initialize database: %v", err)
-	}
-
-	err = db.CleanLogEntries()
-	if err != nil {
-		db.Close()
-		return nil, fmt.Errorf("failed to clean log entries: %v", err)
-	}
-
-	parseService := parser.NewParser()
-	ingestService := ingester.NewIngester(db, parseService, slog.Default())
-
-	return ingestService, nil
 }
