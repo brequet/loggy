@@ -2,21 +2,30 @@
   import type { LogEntry } from "../types/LogEntry";
 
   export let entry: LogEntry;
+
+  function getLevelColor(level: string): string {
+    switch (level.toLowerCase()) {
+      case "error":
+        return "text-red-500";
+      case "warn":
+        return "text-yellow-500";
+      case "info":
+        return "text-blue-500";
+      case "debug":
+        return "text-green-500";
+      default:
+        return "text-gray-500";
+    }
+  }
 </script>
 
-<div class="flex flex-row py-1 font-mono text-sm">
-  <div class="flex">
-    <span class="text-gray-600">{entry.app_name}</span>
-    <span class="ml-2 text-gray-500">{entry.timestamp}</span>
-    <span
-      class="ml-2 {entry.level === 'ERROR'
-        ? 'text-red-500'
-        : entry.level === 'WARN'
-          ? 'text-yellow-500'
-          : 'text-green-500'}">[{entry.level}]</span
-    >
-  </div>
-  <div class="ml-2 text-white">
-    {entry.content}
-  </div>
+<div
+  class="grid grid-cols-[auto_auto_auto_1fr] gap-x-2 py-1 font-mono text-sm hover:bg-gray-800"
+>
+  <span class="text-gray-600 whitespace-nowrap">{entry.app_name}</span>
+  <span class="text-gray-500 whitespace-nowrap">{entry.timestamp}</span>
+  <span class="whitespace-nowrap {getLevelColor(entry.level)}"
+    >[{entry.level}]</span
+  >
+  <span class="text-white break-words">{entry.content}</span>
 </div>

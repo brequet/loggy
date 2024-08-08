@@ -18,9 +18,7 @@
         error = null;
         try {
             const newLogs = await fetchLogs(page, PAGE_SIZE);
-            console.log("new logs:", newLogs);
             logs = [...logs, ...newLogs];
-            console.log("logs:", logs);
             page++;
         } catch (err) {
             error = "Failed to load logs";
@@ -47,7 +45,7 @@
 <div
     bind:this={containerRef}
     onscroll={handleScroll}
-    class="h-screen overflow-y-auto overflow-x-auto bg-gray-900 p-4"
+    class=" bg-gray-900 p-4 flex-1 overflow-y-auto"
 >
     {#each logs as log}
         <LogEntryComponent entry={log} />
