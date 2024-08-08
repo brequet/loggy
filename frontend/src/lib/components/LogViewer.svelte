@@ -1,59 +1,116 @@
 <script lang="ts">
-    import { onMount } from "svelte";
-    import type { LogEntry } from "../types/LogEntry";
-    import { fetchLogs } from "../services/logService";
-    import LogEntryComponent from "./LogEntryComponent.svelte";
+  import { mount, onMount } from "svelte";
+  import type { LogEntry } from "../types/LogEntry";
+  import { fetchLogs } from "../services/logService";
+  import LogEntryComponent from "./LogEntryComponent.svelte";
+  import { filters } from "../stores/Filters.svelte";
+  import FilterPanel from "./FilterPanel.svelte";
 
-    const PAGE_SIZE = 50;
+  const PAGE_SIZE = 50;
+  let page = $state(1);
 
-    let logs: LogEntry[] = $state([]);
-    let page = $state(1);
-    let loading = $state(false);
-    let error = $state<string | null>("null");
-    let containerRef: HTMLDivElement;
+  let logs: LogEntry[] = $state([]);
 
-    async function loadMoreLogs() {
-        if (loading) return;
-        loading = true;
-        error = null;
-        try {
-            const newLogs = await fetchLogs(page, PAGE_SIZE);
-            logs = [...logs, ...newLogs];
-            page++;
-        } catch (err) {
-            error = "Failed to load logs";
-        } finally {
-            loading = false;
-        }
-    }
+  let loading = $state(false);
+  let error = $state<string | null>("null");
 
-    onMount(() => {
+  let fullQueryParams = $derived(
+    new URLSearchParams({
+      ...Object.fromEntries(filters.queryParams),
+      page: page.toString(),
+      pageSize: PAGE_SIZE.toString(),
+    })
+  );
+
+  let previousQueryParams = "";
+
+  $effect(() => {
+    if (
+      previousQueryParams !== "" &&
+      fullQueryParams.toString() !== previousQueryParams
+    ) {
+      const fullQueryPage = fullQueryParams.get("page");
+      const previousQueryPage = previousQueryParams
+        .split("page=")[1]
+        .split("&")[0];
+      if (fullQueryPage === previousQueryPage) {
+        loadLogs();
+      } else {
         loadMoreLogs();
-    });
-
-    function handleScroll(event: Event) {
-        const target = event.target as HTMLDivElement;
-        if (
-            target.scrollHeight - target.scrollTop <=
-            target.clientHeight + 100
-        ) {
-            loadMoreLogs();
-        }
+      }
+      previousQueryParams = fullQueryParams.toString();
     }
+
+    if (previousQueryParams === "") {
+      previousQueryParams = fullQueryParams.toString();
+    }
+  });
+
+  async function loadLogs(append = false) {
+    if (loading) return;
+    loading = true;
+    error = null;
+    try {
+      const newLogs = await fetchLogs(fullQueryParams.toString());
+      logs = append ? [...logs, ...newLogs] : newLogs;
+    } catch (err) {
+      error = "Failed to load logs";
+    } finally {
+      loading = false;
+    }
+  }
+
+  function loadMoreLogs() {
+    page++;
+    loadLogs(true);
+  }
+
+  onMount(() => {
+    loadMoreLogs();
+  });
+
+  function handleScroll(event: Event) {
+    const target = event.target as HTMLDivElement;
+    if (target.scrollHeight - target.scrollTop <= target.clientHeight + 100) {
+      loadMoreLogs();
+    }
+  }
+
+  let a = 1;
+
+  function incrementA() {
+    console.log("incrementA");
+    a++;
+  }
+
+  $derived(() => {
+    incrementA();
+  });
 </script>
 
-<div
-    bind:this={containerRef}
-    onscroll={handleScroll}
-    class=" bg-gray-900 p-4 flex-1 overflow-y-auto"
->
-    {#each logs as log}
-        <LogEntryComponent entry={log} />
-    {/each}
-    {#if loading}
-        <div class="text-center text-gray-500">Loading...</div>
-    {/if}
-    {#if error}
-        <div class="text-center text-red-500">{error}</div>
-    {/if}
+<p>
+  a: {a}
+</p>
+
+<div onscroll={handleScroll} class=" bg-gray-900 p-4 flex-1 overflow-y-auto">
+  {#if fullQueryParams}
+    <p>
+      fullQueryParams: {fullQueryParams}
+    </p>
+    <p>
+      queryParams: {filters.queryParams}
+    </p>
+  {/if}
+
+  <FilterPanel />
+
+  {#each logs as log}
+    <LogEntryComponent entry={log} />
+  {/each}
+  {#if loading}
+    <div class="text-center text-gray-500">Loading...</div>
+  {/if}
+  {#if error}
+    <div class="text-center text-red-500">{error}</div>
+  {/if}
 </div>
