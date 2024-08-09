@@ -2,6 +2,7 @@ package database
 
 import (
 	"database/sql"
+	"fmt"
 	"strings"
 	"time"
 
@@ -129,6 +130,9 @@ func (s *SQLiteDB) GetLogEntries(page int, pageSize int, appNames []string, leve
 
 	query += ` ORDER BY timestamp ASC LIMIT ? OFFSET ?`
 	args = append(args, pageSize, (page-1)*pageSize)
+
+	fmt.Printf("query: %s\n", query)
+	fmt.Printf("args: %v\n", args)
 
 	rows, err := s.db.Query(query, args...)
 	if err != nil {

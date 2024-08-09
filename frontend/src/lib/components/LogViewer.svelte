@@ -1,116 +1,95 @@
 <script lang="ts">
-  import { mount, onMount } from "svelte";
-  import type { LogEntry } from "../types/LogEntry";
-  import { fetchLogs } from "../services/logService";
-  import LogEntryComponent from "./LogEntryComponent.svelte";
-  import { filters } from "../stores/Filters.svelte";
-  import FilterPanel from "./FilterPanel.svelte";
+    import { mount, onMount } from "svelte";
+    import type { LogEntry } from "../types/LogEntry";
+    import { fetchLogs } from "../services/logService";
+    import LogEntryComponent from "./LogEntryComponent.svelte";
+    import { filters } from "../stores/Filters.svelte";
+    import FilterPanel from "./FilterPanel.svelte";
 
-  const PAGE_SIZE = 50;
-  let page = $state(1);
+    const PAGE_SIZE = 50;
+    let page = $state(1);
 
-  let logs: LogEntry[] = $state([]);
+    let logs: LogEntry[] = $state([]);
 
-  let loading = $state(false);
-  let error = $state<string | null>("null");
+    let loading = $state(false);
+    let error = $state<string | null>("null");
 
-  let fullQueryParams = $derived(
-    new URLSearchParams({
-      ...Object.fromEntries(filters.queryParams),
-      page: page.toString(),
-      pageSize: PAGE_SIZE.toString(),
-    })
-  );
+    let fullQueryParams = $derived(
+        new URLSearchParams({
+            ...Object.fromEntries(filters.queryParams),
+            page: page.toString(),
+            pageSize: PAGE_SIZE.toString(),
+        }),
+    );
 
-  let previousQueryParams = "";
+    let previousQueryParams = "";
 
-  $effect(() => {
-    if (
-      previousQueryParams !== "" &&
-      fullQueryParams.toString() !== previousQueryParams
-    ) {
-      const fullQueryPage = fullQueryParams.get("page");
-      const previousQueryPage = previousQueryParams
-        .split("page=")[1]
-        .split("&")[0];
-      if (fullQueryPage === previousQueryPage) {
-        loadLogs();
-      } else {
+    $effect(() => {
+        if (
+            previousQueryParams !== "" &&
+            fullQueryParams.toString() !== previousQueryParams
+        ) {
+            const fullQueryPage = fullQueryParams.get("page");
+            const previousQueryPage = previousQueryParams
+                .split("page=")[1]
+                .split("&")[0];
+            if (fullQueryPage === previousQueryPage) {
+                loadLogs();
+            } else {
+                loadMoreLogs();
+            }
+            previousQueryParams = fullQueryParams.toString();
+        }
+
+        if (previousQueryParams === "") {
+            previousQueryParams = fullQueryParams.toString();
+        }
+    });
+
+    async function loadLogs(append = false) {
+        if (loading) return;
+        loading = true;
+        error = null;
+        try {
+            const newLogs = await fetchLogs(fullQueryParams.toString());
+            logs = append ? [...logs, ...newLogs] : newLogs;
+        } catch (err) {
+            error = "Failed to load logs";
+        } finally {
+            loading = false;
+        }
+    }
+
+    function loadMoreLogs() {
+        page++;
+        loadLogs(true);
+    }
+
+    onMount(() => {
         loadMoreLogs();
-      }
-      previousQueryParams = fullQueryParams.toString();
+    });
+
+    function handleScroll(event: Event) {
+        const target = event.target as HTMLDivElement;
+        if (
+            target.scrollHeight - target.scrollTop <=
+            target.clientHeight + 100
+        ) {
+            loadMoreLogs();
+        }
     }
-
-    if (previousQueryParams === "") {
-      previousQueryParams = fullQueryParams.toString();
-    }
-  });
-
-  async function loadLogs(append = false) {
-    if (loading) return;
-    loading = true;
-    error = null;
-    try {
-      const newLogs = await fetchLogs(fullQueryParams.toString());
-      logs = append ? [...logs, ...newLogs] : newLogs;
-    } catch (err) {
-      error = "Failed to load logs";
-    } finally {
-      loading = false;
-    }
-  }
-
-  function loadMoreLogs() {
-    page++;
-    loadLogs(true);
-  }
-
-  onMount(() => {
-    loadMoreLogs();
-  });
-
-  function handleScroll(event: Event) {
-    const target = event.target as HTMLDivElement;
-    if (target.scrollHeight - target.scrollTop <= target.clientHeight + 100) {
-      loadMoreLogs();
-    }
-  }
-
-  let a = 1;
-
-  function incrementA() {
-    console.log("incrementA");
-    a++;
-  }
-
-  $derived(() => {
-    incrementA();
-  });
 </script>
 
-<p>
-  a: {a}
-</p>
-
 <div onscroll={handleScroll} class=" bg-gray-900 p-4 flex-1 overflow-y-auto">
-  {#if fullQueryParams}
-    <p>
-      fullQueryParams: {fullQueryParams}
-    </p>
-    <p>
-      queryParams: {filters.queryParams}
-    </p>
-  {/if}
+    <FilterPanel />
 
-  <FilterPanel />
-
-  {#each logs as log}
-    <LogEntryComponent entry={log} />
-  {/each}
-  {#if loading}
-    <div class="text-center text-gray-500">Loading...</div>
-  {/if}
-  {#if error}
-    <div class="text-center text-red-500">{error}</div>
-  {/if}
+    {#each logs as log}
+        <LogEntryComponent entry={log} />
+    {/each}
+    {#if loading}
+        <div class="text-center text-gray-500">Loading...</div>
+    {/if}
+    {#if error}
+        <div class="text-center text-red-500">{error}</div>
+    {/if}
 </div>

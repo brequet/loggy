@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"strconv"
 	"strings"
@@ -42,19 +43,15 @@ func LogEntriesHandler(db *database.SQLiteDB) http.Handler {
 			levels = strings.Split(levelsStr, ",")
 		}
 
-		var start, end *time.Time
-		layout := "2006-01-02T15:04:05"
-		if startDate != "" {
-			st, err := time.Parse(layout, startDate)
-			if err == nil {
-				start = &st
-			}
+		start, err := parseDate(startDate)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
 		}
-		if endDate != "" {
-			st, err := time.Parse(layout, endDate)
-			if err == nil {
-				end = &st
-			}
+		end, err := parseDate(endDate)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
 		}
 
 		entries, err := db.GetLogEntries(page, pageSize, appNames, levels, start, end)
@@ -67,4 +64,26 @@ func LogEntriesHandler(db *database.SQLiteDB) http.Handler {
 	})
 
 	return r
+}
+
+func parseDate(dateStr string) (*time.Time, error) {
+	layoutWithSeconds := "2006-01-02T15:04:05"
+	if dateStr != "" {
+		fmt.Printf("dateStr: %s\n", dateStr)
+		st, err := time.Parse(layoutWithSeconds, dateStr)
+		if err == nil {
+			fmt.Printf("date with seconds: %v\n", st)
+			return &st, nil
+		} else {
+			layoutWithSeconds := "2006-01-02T15:04"
+			st, err := time.Parse(layoutWithSeconds, dateStr)
+			if err == nil {
+				fmt.Printf("date without seconds: %v\n", st)
+				return &st, nil
+			} else {
+				return nil, fmt.Errorf("invalid date format: %s", dateStr)
+			}
+		}
+	}
+	return nil, nil
 }

@@ -35,7 +35,7 @@
   <h2 class="text-xl font-bold mb-4 text-white">Filters</h2>
 
   <button
-    on:click={resetFilters}
+    onclick={resetFilters}
     class="mt-4 w-full px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
   >
     Reset Filters
@@ -47,11 +47,12 @@
       <input
         type="text"
         bind:value={appNameInput}
+        onkeyup={(event) => event.key === "Enter" && addAppName()}
         class="flex-grow px-3 py-2 bg-gray-700 text-white rounded-l-md"
         placeholder="Enter app name"
       />
       <button
-        on:click={addAppName}
+        onclick={addAppName}
         class="px-4 py-2 bg-blue-600 text-white rounded-r-md hover:bg-blue-700"
       >
         Add
@@ -64,7 +65,7 @@
         >
           {appName}
           <button
-            on:click={() => removeAppName(appName)}
+            onclick={() => removeAppName(appName)}
             class="ml-2 text-xs bg-blue-600 rounded-full w-4 h-4 flex items-center justify-center hover:bg-blue-700"
           >
             ×
@@ -80,11 +81,12 @@
       <input
         type="text"
         bind:value={levelInput}
+        onkeyup={(event) => event.key === "Enter" && addLevel()}
         class="flex-grow px-3 py-2 bg-gray-700 text-white rounded-l-md"
         placeholder="Enter log level"
       />
       <button
-        on:click={addLevel}
+        onclick={addLevel}
         class="px-4 py-2 bg-blue-600 text-white rounded-r-md hover:bg-blue-700"
       >
         Add
@@ -97,7 +99,7 @@
         >
           {level}
           <button
-            on:click={() => removeLevel(level)}
+            onclick={() => removeLevel(level)}
             class="ml-2 text-xs bg-green-600 rounded-full w-4 h-4 flex items-center justify-center hover:bg-green-700"
           >
             ×
@@ -111,7 +113,9 @@
     <label class="block text-sm font-medium text-gray-300">Start Date</label>
     <input
       type="datetime-local"
+      step="1"
       bind:value={filters.startDate}
+      onkeyup={(event) => console.log("value", event?.target?.value)}
       class="mt-1 block w-full px-3 py-2 bg-gray-700 text-white rounded-md"
     />
   </div>

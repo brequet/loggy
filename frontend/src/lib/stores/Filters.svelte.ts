@@ -8,8 +8,8 @@ class Filters {
     new URLSearchParams({
       appNames: this.appNames.join(","),
       levels: this.levels.join(","),
-      startDate: this.startDate?.toISOString() || "",
-      endDate: this.endDate?.toISOString() || "",
+      startDate: this.startDate?.toString() || "",
+      endDate: this.endDate?.toString() || "",
     })
   );
 
