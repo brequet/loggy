@@ -20,12 +20,12 @@
 </script>
 
 <div
-  class="grid grid-cols-[auto_auto_auto_1fr] gap-x-2 py-1 font-mono text-sm hover:bg-gray-800"
+  class="grid grid-cols-[auto_auto_auto_1fr] gap-x-2 py-1 font-mono text-sm hover:bg-gray-200"
 >
-  <span class="text-gray-600 whitespace-nowrap">{entry.app_name}</span>
-  <span class="text-gray-500 whitespace-nowrap">{entry.timestamp}</span>
+  <span class="text-neutral-400 whitespace-nowrap">{entry.app_name}</span>
+  <span class="text-neutral-500 whitespace-nowrap">{entry.timestamp}</span>
   <span class="whitespace-nowrap {getLevelColor(entry.level)}"
     >[{entry.level}]</span
   >
-  <span class="text-white break-words">{entry.content}</span>
+  <span class="text-black break-words">{entry.content}</span>
 </div>

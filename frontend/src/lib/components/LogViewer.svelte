@@ -80,9 +80,7 @@
     }
 </script>
 
-<div onscroll={handleScroll} class=" bg-gray-900 p-4 flex-1 overflow-y-auto">
-    <FilterPanel />
-
+<div onscroll={handleScroll} class=" bg-gray-100 p-4 flex-1 overflow-y-auto">
     {#each logs as log}
         <LogEntryComponent entry={log} />
     {/each}

@@ -1,5 +1,12 @@
 <script lang="ts">
+  import { Button } from "$lib/components/ui/button";
+  import { Input } from "$lib/components/ui/input";
+  import { Label } from "$lib/components/ui/label";
+  import * as Sheet from "$lib/components/ui/sheet";
+  import { Filter } from "lucide-svelte";
   import { filters } from "../stores/Filters.svelte";
+  import ListInput from "./filter/ListInput.svelte";
+  import DateTimeInput from "./filter/DateTimeInput.svelte";
 
   let appNameInput = "";
   let levelInput = "";
@@ -31,15 +38,63 @@
   }
 </script>
 
+<Sheet.Root>
+  <Sheet.Trigger>
+    <Button variant="outline" size="icon">
+      <Filter class="w-5 h-5" />
+    </Button>
+  </Sheet.Trigger>
+  <Sheet.Content>
+    <Sheet.Header>
+      <Sheet.Title>Logs Filtering</Sheet.Title>
+      <Sheet.Description>
+        Apply filter to your logs to get a better overview of what's going on
+      </Sheet.Description>
+    </Sheet.Header>
+
+    <div class="w-full pt-4 flex flex-col gap-4">
+      <ListInput
+        label="Add application names"
+        bind:input={appNameInput}
+        itemList={filters.appNames}
+        addAction={addAppName}
+        removeAction={removeAppName}
+      ></ListInput>
+
+      <ListInput
+        label="Add levels"
+        bind:input={levelInput}
+        itemList={filters.levels}
+        addAction={addLevel}
+        removeAction={removeLevel}
+      ></ListInput>
+
+      <DateTimeInput label="Start Date" bind:date={filters.startDate} />
+
+      <DateTimeInput label="End Date" bind:date={filters.endDate} />
+
+      <Button
+        variant="destructive"
+        class="mt-4 w-full px-4 py-2"
+        onclick={resetFilters}
+      >
+        Reset Filters
+      </Button>
+    </div>
+  </Sheet.Content>
+</Sheet.Root>
+
+<!-- 
 <div class="bg-gray-800 p-4 rounded-lg">
   <h2 class="text-xl font-bold mb-4 text-white">Filters</h2>
 
-  <button
+  <Button
     onclick={resetFilters}
-    class="mt-4 w-full px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
+    variant="destructive"
+    class="mt-4 w-full px-4 py-2 "
   >
     Reset Filters
-  </button>
+  </Button>
 
   <div class="mb-4">
     <label class="block text-sm font-medium text-gray-300">App Names</label>
@@ -124,6 +179,7 @@
     <label class="block text-sm font-medium text-gray-300">End Date</label>
     <input
       type="datetime-local"
+      step="1"
       bind:value={filters.endDate}
       class="mt-1 block w-full px-3 py-2 bg-gray-700 text-white rounded-md"
     />
@@ -133,4 +189,4 @@
     <strong>Query Params:</strong>
     {filters.queryParams}
   </div>
-</div>
+</div> -->
