@@ -14,36 +14,24 @@
     let loading = $state(false);
     let error = $state<string | null>("null");
 
-    let fullQueryParams = $derived(
-        new URLSearchParams({
-            ...Object.fromEntries(filters.queryParams),
-            page: page.toString(),
-            pageSize: PAGE_SIZE.toString(),
-        }),
-    );
+    let filtersChangedDate = $derived.by(() => {
+        const { appNames, levels, startDate, endDate } = filters;
 
-    let previousQueryParams = "";
+        return Date.now();
+    });
+
+    let lastFiltersChanged: number | null = null;
 
     $effect(() => {
-        if (
-            previousQueryParams !== "" &&
-            fullQueryParams.toString() !== previousQueryParams
-        ) {
-            const fullQueryPage = fullQueryParams.get("page");
-            const previousQueryPage = previousQueryParams
-                .split("page=")[1]
-                .split("&")[0];
-            if (fullQueryPage === previousQueryPage) {
-                loadLogs();
-            } else {
-                loadMoreLogs();
-            }
-            previousQueryParams = fullQueryParams.toString();
+        console.log("loading logs");
+        if (lastFiltersChanged && filtersChangedDate === lastFiltersChanged) {
+            return;
         }
 
-        if (previousQueryParams === "") {
-            previousQueryParams = fullQueryParams.toString();
-        }
+        page = 1;
+        loadLogs();
+
+        lastFiltersChanged = filtersChangedDate;
     });
 
     async function loadLogs(append = false) {
@@ -51,6 +39,14 @@
         loading = true;
         error = null;
         try {
+            const fullQueryParams = new URLSearchParams({
+                appNames: filters.appNames.join(","),
+                levels: filters.levels.join(","),
+                startDate: filters.startDate?.toString() || "",
+                endDate: filters.endDate?.toString() || "",
+                page: page.toString(),
+                pageSize: PAGE_SIZE.toString(),
+            });
             const newLogs = await fetchLogs(fullQueryParams.toString());
             logs = append ? [...logs, ...newLogs] : newLogs;
         } catch (err) {

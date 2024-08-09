@@ -4,15 +4,6 @@ class Filters {
   startDate = $state<Date | null>(null);
   endDate = $state<Date | null>(null);
 
-  queryParams = $derived(
-    new URLSearchParams({
-      appNames: this.appNames.join(","),
-      levels: this.levels.join(","),
-      startDate: this.startDate?.toString() || "",
-      endDate: this.endDate?.toString() || "",
-    })
-  );
-
   reset() {
     this.appNames = [];
     this.levels = [];
