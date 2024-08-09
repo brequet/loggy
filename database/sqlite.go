@@ -2,6 +2,9 @@ package database
 
 import (
 	"database/sql"
+	"fmt"
+	"strings"
+	"time"
 
 	"github.com/brequet/loggy/entity"
 	_ "github.com/mattn/go-sqlite3"
@@ -93,13 +96,45 @@ func (s *SQLiteDB) InsertLogEntries(entries []entity.LogEntry) error {
 	return nil
 }
 
-func (s *SQLiteDB) GetLogEntries(page int, pageSize int) ([]entity.LogEntry, error) {
-	rows, err := s.db.Query(`
+func (s *SQLiteDB) GetLogEntries(page int, pageSize int, appNames []string, levels []string, startDate *time.Time, endDate *time.Time) ([]entity.LogEntry, error) {
+	query := `
 		SELECT timestamp, app_name, filename, level, content, raw
 		FROM log_entries
-		ORDER BY timestamp ASC
-		LIMIT ? OFFSET ?;
-	`, pageSize, (page-1)*pageSize)
+		WHERE 1 = 1
+	`
+
+	var args []interface{}
+	if len(appNames) > 0 {
+		query += ` AND app_name IN (?` + strings.Repeat(",?", len(appNames)-1) + `)`
+		for _, name := range appNames {
+			args = append(args, name)
+		}
+	}
+
+	if len(levels) > 0 {
+		query += ` AND level IN (?` + strings.Repeat(",?", len(levels)-1) + `)`
+		for _, level := range levels {
+			args = append(args, level)
+		}
+	}
+
+	if startDate != nil {
+		query += ` AND timestamp >= ?`
+		args = append(args, *startDate)
+	}
+
+	if endDate != nil {
+		query += ` AND timestamp <= ?`
+		args = append(args, *endDate)
+	}
+
+	query += ` ORDER BY timestamp ASC LIMIT ? OFFSET ?`
+	args = append(args, pageSize, (page-1)*pageSize)
+
+	fmt.Printf("query: %s\n", query)
+	fmt.Printf("args: %v\n", args)
+
+	rows, err := s.db.Query(query, args...)
 	if err != nil {
 		return nil, err
 	}

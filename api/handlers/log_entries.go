@@ -2,8 +2,11 @@ package handlers
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"strconv"
+	"strings"
+	"time"
 
 	"github.com/brequet/loggy/database"
 	"github.com/go-chi/chi/v5"
@@ -20,6 +23,10 @@ func LogEntriesHandler(db *database.SQLiteDB) http.Handler {
 	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
 		page, _ := strconv.Atoi(r.URL.Query().Get("page"))
 		pageSize, _ := strconv.Atoi(r.URL.Query().Get("pageSize"))
+		appNamesStr := r.URL.Query().Get("appNames")
+		levelsStr := r.URL.Query().Get("levels")
+		startDate := r.URL.Query().Get("startDate")
+		endDate := r.URL.Query().Get("endDate")
 
 		if page == 0 {
 			page = DEFAULT_PAGE
@@ -28,7 +35,26 @@ func LogEntriesHandler(db *database.SQLiteDB) http.Handler {
 			pageSize = DEFAULT_PAGE_SIZE
 		}
 
-		entries, err := db.GetLogEntries(page, pageSize)
+		var appNames, levels []string
+		if appNamesStr != "" {
+			appNames = strings.Split(appNamesStr, ",")
+		}
+		if levelsStr != "" {
+			levels = strings.Split(levelsStr, ",")
+		}
+
+		start, err := parseDate(startDate)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+		end, err := parseDate(endDate)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		entries, err := db.GetLogEntries(page, pageSize, appNames, levels, start, end)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
@@ -38,4 +64,26 @@ func LogEntriesHandler(db *database.SQLiteDB) http.Handler {
 	})
 
 	return r
+}
+
+func parseDate(dateStr string) (*time.Time, error) {
+	layoutWithSeconds := "2006-01-02T15:04:05"
+	if dateStr != "" {
+		fmt.Printf("dateStr: %s\n", dateStr)
+		st, err := time.Parse(layoutWithSeconds, dateStr)
+		if err == nil {
+			fmt.Printf("date with seconds: %v\n", st)
+			return &st, nil
+		} else {
+			layoutWithSeconds := "2006-01-02T15:04"
+			st, err := time.Parse(layoutWithSeconds, dateStr)
+			if err == nil {
+				fmt.Printf("date without seconds: %v\n", st)
+				return &st, nil
+			} else {
+				return nil, fmt.Errorf("invalid date format: %s", dateStr)
+			}
+		}
+	}
+	return nil, nil
 }
