@@ -5,6 +5,13 @@ import (
 	"time"
 )
 
+type LogEntriesResult struct {
+	Entries    []LogEntry `json:"entries"`
+	TotalCount int        `json:"total_count"`
+	Page       int        `json:"page"`
+	PageSize   int        `json:"page_size"`
+}
+
 type LogLevel string
 
 const (

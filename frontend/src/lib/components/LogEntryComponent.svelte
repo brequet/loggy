@@ -44,6 +44,8 @@
     </DropdownMenu.Trigger>
     <DropdownMenu.Content>
       <DropdownMenu.Group>
+        <DropdownMenu.Label>Set filters</DropdownMenu.Label>
+        <DropdownMenu.Separator />
         <DropdownMenu.Item onclick={setAsStartDate}
           >Set as start date</DropdownMenu.Item
         >

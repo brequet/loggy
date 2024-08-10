@@ -25,6 +25,7 @@ func SetupRoutes(db *database.SQLiteDB) *chi.Mux {
 
 	r.Route("/api", func(r chi.Router) {
 		r.Mount("/logs", handlers.LogEntriesHandler(db))
+		r.Mount("/apps", handlers.AppsHandler(db))
 	})
 
 	return r

@@ -54,13 +54,29 @@ func LogEntriesHandler(db *database.SQLiteDB) http.Handler {
 			return
 		}
 
-		entries, err := db.GetLogEntries(page, pageSize, appNames, levels, start, end)
+		logEntryResult, err := db.GetLogEntries(page, pageSize, appNames, levels, start, end)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
-		json.NewEncoder(w).Encode(entries)
+		json.NewEncoder(w).Encode(logEntryResult)
+	})
+
+	return r
+}
+
+func AppsHandler(db *database.SQLiteDB) http.Handler {
+	r := chi.NewRouter()
+
+	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
+		appNames, err := db.GetAppNames()
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		json.NewEncoder(w).Encode(appNames)
 	})
 
 	return r
@@ -69,16 +85,13 @@ func LogEntriesHandler(db *database.SQLiteDB) http.Handler {
 func parseDate(dateStr string) (*time.Time, error) {
 	layoutWithSeconds := "2006-01-02T15:04:05"
 	if dateStr != "" {
-		fmt.Printf("dateStr: %s\n", dateStr)
 		st, err := time.Parse(layoutWithSeconds, dateStr)
 		if err == nil {
-			fmt.Printf("date with seconds: %v\n", st)
 			return &st, nil
 		} else {
 			layoutWithSeconds := "2006-01-02T15:04"
 			st, err := time.Parse(layoutWithSeconds, dateStr)
 			if err == nil {
-				fmt.Printf("date without seconds: %v\n", st)
 				return &st, nil
 			} else {
 				return nil, fmt.Errorf("invalid date format: %s", dateStr)

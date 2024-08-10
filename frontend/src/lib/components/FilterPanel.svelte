@@ -1,13 +1,21 @@
 <script lang="ts">
-  import { Button } from "$lib/components/ui/button";
-  import { Input } from "$lib/components/ui/input";
-  import { Label } from "$lib/components/ui/label";
-  import * as Sheet from "$lib/components/ui/sheet";
-  import { Filter } from "lucide-svelte";
-  import { filters } from "../stores/Filters.svelte";
-  import ListInput from "./filter/ListInput.svelte";
   import { Badge } from "$lib/components/ui/badge";
+  import { Button } from "$lib/components/ui/button";
+  import * as Sheet from "$lib/components/ui/sheet";
+  import { fetchAppNames } from "$lib/services/logService";
+  import { Filter } from "lucide-svelte";
+  import { onMount } from "svelte";
+  import { filters } from "../stores/Filters.svelte";
   import DateTimeInput from "./filter/DateTimeInput.svelte";
+  import ListInput from "./filter/ListInput.svelte";
+  import ChoiceList from "./filter/ChoiceList.svelte";
+  import { allLogLevels } from "$lib/types/LogEntry";
+
+  let allAppsName: string[] = [];
+
+  onMount(async () => {
+    allAppsName = await fetchAppNames();
+  });
 
   let appNameInput = "";
   let levelInput = "";
@@ -61,21 +69,17 @@
     </Sheet.Header>
 
     <div class="w-full pt-4 flex flex-col gap-4">
-      <ListInput
-        label="Add application names"
-        bind:input={appNameInput}
-        itemList={filters.appNames}
-        addAction={addAppName}
-        removeAction={removeAppName}
-      ></ListInput>
+      <ChoiceList
+        label="By application name"
+        availableChoices={allAppsName}
+        bind:selectedChoices={filters.appNames}
+      ></ChoiceList>
 
-      <ListInput
-        label="Add levels"
-        bind:input={levelInput}
-        itemList={filters.levels}
-        addAction={addLevel}
-        removeAction={removeLevel}
-      ></ListInput>
+      <ChoiceList
+        label="By log level"
+        availableChoices={allLogLevels}
+        bind:selectedChoices={filters.levels}
+      ></ChoiceList>
 
       <DateTimeInput label="Start Date" bind:date={filters.startDate} />
 

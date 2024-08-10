@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { fetchLogs } from "../services/logService";
+  import { fetchLogEntriesResult } from "../services/logService";
   import { filters } from "../stores/Filters.svelte";
   import type { LogEntry } from "../types/LogEntry";
   import LogEntryComponent from "./LogEntryComponent.svelte";
@@ -8,6 +8,7 @@
   let page = $state(1);
 
   let logs: LogEntry[] = $state([]);
+  let totalAvailableEntries = $state(0);
 
   let loading = $state(false);
   let error = $state<string | null>("null");
@@ -50,15 +51,18 @@
         page: page.toString(),
         pageSize: PAGE_SIZE.toString(),
       });
-      const newLogs = await fetchLogs(fullQueryParams.toString());
+      const logEntriesResult = await fetchLogEntriesResult(
+        fullQueryParams.toString(),
+      );
       if (append) {
-        if (newLogs.length > 0) {
-          logs = [...logs, ...newLogs];
+        if (logEntriesResult.entries.length > 0) {
+          logs = [...logs, ...logEntriesResult.entries];
           page++;
         }
       } else {
-        logs = newLogs;
+        logs = logEntriesResult.entries;
       }
+      totalAvailableEntries = logEntriesResult.total_count;
     } catch (err) {
       error = "Failed to load logs";
     } finally {
@@ -85,3 +89,7 @@
     <div class="text-center text-red-500">{error}</div>
   {/if}
 </div>
+
+<p class="text-sm text-neutral-400">
+  {totalAvailableEntries} entries available
+</p>

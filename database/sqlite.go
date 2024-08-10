@@ -2,7 +2,6 @@ package database
 
 import (
 	"database/sql"
-	"fmt"
 	"strings"
 	"time"
 
@@ -96,48 +95,57 @@ func (s *SQLiteDB) InsertLogEntries(entries []entity.LogEntry) error {
 	return nil
 }
 
-func (s *SQLiteDB) GetLogEntries(page int, pageSize int, appNames []string, levels []string, startDate *time.Time, endDate *time.Time) ([]entity.LogEntry, error) {
-	query := `
-		SELECT timestamp, app_name, filename, level, content, raw
-		FROM log_entries
-		WHERE 1 = 1
-	`
-
+func (s *SQLiteDB) GetLogEntries(
+	page, pageSize int,
+	appNames, levels []string,
+	startDate, endDate *time.Time,
+) (*entity.LogEntriesResult, error) {
+	baseQuery := `
+        FROM log_entries
+        WHERE 1 = 1
+    `
 	var args []interface{}
+
 	if len(appNames) > 0 {
-		query += ` AND app_name IN (?` + strings.Repeat(",?", len(appNames)-1) + `)`
+		baseQuery += ` AND app_name IN (?` + strings.Repeat(",?", len(appNames)-1) + `)`
 		for _, name := range appNames {
 			args = append(args, name)
 		}
 	}
-
 	if len(levels) > 0 {
-		query += ` AND level IN (?` + strings.Repeat(",?", len(levels)-1) + `)`
+		baseQuery += ` AND level IN (?` + strings.Repeat(",?", len(levels)-1) + `)`
 		for _, level := range levels {
 			args = append(args, level)
 		}
 	}
-
 	if startDate != nil {
-		query += ` AND timestamp >= ?`
+		baseQuery += ` AND timestamp >= ?`
 		args = append(args, *startDate)
 	}
-
 	if endDate != nil {
-		query += ` AND timestamp <= ?`
+		baseQuery += ` AND timestamp <= ?`
 		args = append(args, *endDate)
 	}
 
-	query += ` ORDER BY timestamp ASC LIMIT ? OFFSET ?`
+	countQuery := "SELECT COUNT(*) " + baseQuery
+	var totalCount int
+	err := s.db.QueryRow(countQuery, args...).Scan(&totalCount)
+	if err != nil {
+		return nil, err
+	}
+
+	// Fetch paginated results
+	query := `
+        SELECT timestamp, app_name, filename, level, content, raw
+    ` + baseQuery + `
+        ORDER BY timestamp ASC LIMIT ? OFFSET ?
+    `
 	args = append(args, pageSize, (page-1)*pageSize)
-
-	fmt.Printf("query: %s\n", query)
-	fmt.Printf("args: %v\n", args)
-
 	rows, err := s.db.Query(query, args...)
 	if err != nil {
 		return nil, err
 	}
+	defer rows.Close()
 
 	entries := make([]entity.LogEntry, 0)
 	for rows.Next() {
@@ -148,5 +156,33 @@ func (s *SQLiteDB) GetLogEntries(page int, pageSize int, appNames []string, leve
 		entries = append(entries, entry)
 	}
 
-	return entries, nil
+	return &entity.LogEntriesResult{
+		Entries:    entries,
+		TotalCount: totalCount,
+		Page:       page,
+		PageSize:   pageSize,
+	}, nil
+}
+
+func (s *SQLiteDB) GetAppNames() ([]string, error) {
+	query := `
+		SELECT DISTINCT app_name
+		FROM log_entries
+	`
+	rows, err := s.db.Query(query)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var appNames []string
+	for rows.Next() {
+		var appName string
+		if err := rows.Scan(&appName); err != nil {
+			return nil, err
+		}
+		appNames = append(appNames, appName)
+	}
+
+	return appNames, nil
 }
