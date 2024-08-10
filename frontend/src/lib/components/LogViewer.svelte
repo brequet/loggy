@@ -91,5 +91,5 @@
 </div>
 
 <p class="text-sm text-neutral-400">
-  {totalAvailableEntries} entries available
+  {totalAvailableEntries} entries found
 </p>

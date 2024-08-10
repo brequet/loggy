@@ -59,11 +59,7 @@
 
       <DateTimeInput label="End Date" bind:date={filters.endDate} />
 
-      <Button
-        variant="destructive"
-        class="mt-4 w-full px-4 py-2"
-        onclick={resetFilters}
-      >
+      <Button class="mt-4 w-full px-4 py-2" onclick={resetFilters}>
         Reset Filters
       </Button>
     </div>

@@ -22,7 +22,7 @@
 </script>
 
 <div>
-    <div class="flex w-full max-w-sm flex-col gap-1.5">
+    <div class="flex w-full flex-col gap-1.5">
         <Label>{label}</Label>
         {#each availableChoices as choice}
             <div class="flex items-center space-x-2">

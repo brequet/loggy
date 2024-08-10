@@ -7,8 +7,8 @@
   <div
     class="container h-full mx-auto px-4 py-8 overflow-y-hidden flex flex-col"
   >
-    <header class="mb-8 flex justify-between">
-      <h1 class="mb-6 text-3xl font-bold">Loggy</h1>
+    <header class="mb-4 flex justify-between">
+      <h1 class="text-3xl font-bold">Loggy</h1>
       <FilterPanel />
     </header>
     <LogViewer />
