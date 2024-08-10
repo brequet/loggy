@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/brequet/loggy/config"
 	"github.com/brequet/loggy/entity"
 )
 
@@ -21,39 +22,28 @@ type Parser struct {
 	formats []*LogFormat
 }
 
-func NewParser() *Parser {
-	return &Parser{
-		formats: []*LogFormat{
-			{
-				Name:       "StandardFormat",
-				DateFormat: "2006-01-02 15:04:05",
-				RegexParser: regexp.MustCompile(
-					`^(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})\s+(DEBUG|INFO|WARN|ERROR|FATAL)\s+(.+)$`,
-				),
-			},
-			{
-				Name:       "SpringBootFormat",
-				DateFormat: "2006-01-02T15:04:05.000-07:00",
-				RegexParser: regexp.MustCompile(
-					`^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}[-+]\d{2}:\d{2})\s+(DEBUG|INFO|WARN|ERROR|FATAL)\s+\d+\s+---\s+\[.+?\]\s+.+?\s+:\s+(.+)$`,
-				),
-			},
-			{
-				Name:       "ActiveMqFormat",
-				DateFormat: "2006-01-02 15:04:05.000",
-				RegexParser: regexp.MustCompile(
-					`^(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{3})\s+\|\s+(DEBUG|INFO|WARN|ERROR|FATAL)\s+\|\s+(.+)\s+\|\s+.+\s+\|\s.+?$`,
-				),
-			},
-			{
-				Name:       "PostgresFormat",
-				DateFormat: "2006-01-02 15:04:05 MST",
-				RegexParser: regexp.MustCompile(
-					`^(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2} [A-Z]+) \[\d+\]: \[\d+-\d+\] user=\[.*\],db=\[.*\],app=\[.*\],client=\d+\.\d+\.\d+\.\d+ (LOG|ERROR|FATAL|WARNING):\s+(.+)$`,
-				),
-			},
+func NewParser(additionalParsersConf []config.Parser) (*Parser, error) {
+	formats := []*LogFormat{
+		{
+			Name:       "StandardFormat",
+			DateFormat: "2006-01-02 15:04:05",
+			RegexParser: regexp.MustCompile(
+				`^(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})\s+(DEBUG|INFO|WARN|ERROR|FATAL)\s+(.+)$`,
+			),
 		},
 	}
+
+	for _, format := range additionalParsersConf {
+		logFormat, err := parseToLogFormat(format.Name, format.DateFormat, format.RegexParser)
+		if err != nil {
+			return nil, fmt.Errorf("failed to parse format: %w", err)
+		}
+		formats = append(formats, logFormat)
+	}
+
+	return &Parser{
+		formats,
+	}, nil
 }
 
 func (p *Parser) ParseLogFile(filePath string) ([]entity.LogEntry, error) {
@@ -135,4 +125,17 @@ func (p *Parser) AddFormat(name, dateFormat, regexPattern string) error {
 	})
 
 	return nil
+}
+
+func parseToLogFormat(name, dateFormat, regexPattern string) (*LogFormat, error) {
+	regex, err := regexp.Compile(regexPattern)
+	if err != nil {
+		return nil, fmt.Errorf("invalid regex pattern: %w", err)
+	}
+
+	return &LogFormat{
+		Name:        name,
+		DateFormat:  dateFormat,
+		RegexParser: regex,
+	}, nil
 }

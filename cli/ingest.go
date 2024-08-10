@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log/slog"
 
+	"github.com/brequet/loggy/config"
 	"github.com/brequet/loggy/database"
 	"github.com/brequet/loggy/ingester"
 	"github.com/brequet/loggy/parser"
@@ -46,7 +47,16 @@ func initializeForIngester() (*ingester.Ingester, error) {
 		return nil, fmt.Errorf("failed to clean log entries: %v", err)
 	}
 
-	parseService := parser.NewParser()
+	conf, err := config.LoadConfig()
+	if err != nil {
+		return nil, fmt.Errorf("failed to load config: %v", err)
+	}
+
+	parseService, err := parser.NewParser(conf.Parsers)
+	if err != nil {
+		return nil, fmt.Errorf("failed to initialize parser: %v", err)
+	}
+
 	ingestService := ingester.NewIngester(db, parseService, slog.Default())
 
 	return ingestService, nil

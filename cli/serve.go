@@ -20,7 +20,12 @@ func newServeCommand() *cobra.Command {
 				return fmt.Errorf("failed to open database: %v", err)
 			}
 
-			server := server.NewServer(config.SERVER_PORT, db, slog.Default())
+			conf, err := config.LoadConfig()
+			if err != nil {
+				return fmt.Errorf("failed to load config: %v", err)
+			}
+
+			server := server.NewServer(conf.Server.Port, db, slog.Default())
 			return server.Start()
 		},
 	}
