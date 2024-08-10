@@ -27,8 +27,8 @@
       return;
     }
 
-    logs = [];
     page = 1;
+    scrollToTop();
     loadLogs();
 
     lastFiltersChanged = filtersChangedDate;
@@ -66,6 +66,12 @@
     }
   }
 
+  let logViewerContainer: HTMLDivElement;
+
+  function scrollToTop() {
+    logViewerContainer.scrollTo({ top: 0 });
+  }
+
   function handleScroll(event: Event) {
     const target = event.target as HTMLDivElement;
     if (target.scrollHeight - target.scrollTop <= target.clientHeight + 100) {
@@ -74,7 +80,11 @@
   }
 </script>
 
-<div onscroll={handleScroll} class=" bg-gray-100 p-4 flex-1 overflow-y-auto">
+<div
+  bind:this={logViewerContainer}
+  onscroll={handleScroll}
+  class=" bg-gray-100 p-4 flex-1 overflow-y-auto"
+>
   <table class="w-full border-collapse font-mono text-sm">
     <tbody>
       {#each logs as log}
