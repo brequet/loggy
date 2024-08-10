@@ -75,9 +75,13 @@
 </script>
 
 <div onscroll={handleScroll} class=" bg-gray-100 p-4 flex-1 overflow-y-auto">
-  {#each logs as log}
-    <LogEntryComponent entry={log} />
-  {/each}
+  <table class="w-full border-collapse font-mono text-sm">
+    <tbody>
+      {#each logs as log}
+        <LogEntryComponent entry={log} />
+      {/each}
+    </tbody>
+  </table>
   {#if loading}
     <div class="text-center text-gray-500">Loading...</div>
   {/if}

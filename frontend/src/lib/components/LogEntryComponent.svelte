@@ -1,7 +1,7 @@
 <script lang="ts">
-  import type { LogEntry } from "../types/LogEntry";
   import * as DropdownMenu from "$lib/components/ui/dropdown-menu";
   import { filters } from "$lib/stores/Filters.svelte";
+  import type { LogEntry } from "../types/LogEntry";
 
   export let entry: LogEntry;
 
@@ -31,16 +31,18 @@
   }
 </script>
 
-<div
-  class="grid grid-cols-[auto_auto_auto_1fr] gap-x-2 py-1 font-mono text-sm hover:bg-gray-200"
->
-  <span class="text-neutral-400 whitespace-nowrap">{entry.app_name}</span>
+<tr class="hover:bg-gray-200">
+  <td class="py-1 pr-2 align-top text-neutral-400 whitespace-nowrap"
+    >{entry.app_name}</td
+  >
+
   <DropdownMenu.Root>
-    <DropdownMenu.Trigger class="flex">
-      <span
-        class="text-neutral-500 whitespace-nowrap hover:text-neutral-600 hover:font-bold hover:cursor-pointer"
-        >{entry.timestamp}
-      </span>
+    <DropdownMenu.Trigger>
+      <td
+        class="my-auto py-1 pr-2 text-neutral-500 whitespace-nowrap hover:text-neutral-600 hover:font-bold hover:cursor-pointer"
+      >
+        {entry.timestamp}
+      </td>
     </DropdownMenu.Trigger>
     <DropdownMenu.Content>
       <DropdownMenu.Group>
@@ -55,8 +57,10 @@
       </DropdownMenu.Group>
     </DropdownMenu.Content>
   </DropdownMenu.Root>
-  <span class="whitespace-nowrap {getLevelColor(entry.level)}"
-    >[{entry.level}]</span
+  <td
+    class="py-1 pr-2 align-top whitespace-nowrap {getLevelColor(entry.level)}"
   >
-  <span class="text-black break-words">{entry.content}</span>
-</div>
+    [{entry.level}]
+  </td>
+  <td class="py-1 align-top text-black break-words">{entry.content}</td>
+</tr>
