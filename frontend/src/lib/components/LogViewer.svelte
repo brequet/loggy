@@ -23,16 +23,11 @@
   let lastFiltersChanged: number | null = null;
 
   $effect(() => {
-    console.log("loading logs", page);
     if (lastFiltersChanged && filtersChangedDate === lastFiltersChanged) {
       return;
     }
 
-    window.scrollTo({
-      top: 0,
-      behavior: "smooth",
-    });
-
+    logs = [];
     page = 1;
     loadLogs();
 
@@ -72,6 +67,7 @@
   }
 
   function handleScroll(event: Event) {
+    console.log("handleScroll");
     const target = event.target as HTMLDivElement;
     if (target.scrollHeight - target.scrollTop <= target.clientHeight + 100) {
       loadLogs(true);
