@@ -21,8 +21,13 @@
   }
 
   function setAsStartDate() {
-    console.log("set as start date", entry.timestamp);
-    // filters.startDate = entry.timestamp;
+    const formattedDate = entry.timestamp.split(".")[0];
+    filters.startDate = formattedDate;
+  }
+
+  function setAsEndDate() {
+    const formattedDate = entry.timestamp.split(".")[0];
+    filters.endDate = formattedDate;
   }
 </script>
 
@@ -31,7 +36,7 @@
 >
   <span class="text-neutral-400 whitespace-nowrap">{entry.app_name}</span>
   <DropdownMenu.Root>
-    <DropdownMenu.Trigger>
+    <DropdownMenu.Trigger class="flex">
       <span
         class="text-neutral-500 whitespace-nowrap hover:text-neutral-600 hover:font-bold hover:cursor-pointer"
         >{entry.timestamp}
@@ -42,7 +47,9 @@
         <DropdownMenu.Item onclick={setAsStartDate}
           >Set as start date</DropdownMenu.Item
         >
-        <DropdownMenu.Item>Set as end date</DropdownMenu.Item>
+        <DropdownMenu.Item onclick={setAsEndDate}
+          >Set as end date</DropdownMenu.Item
+        >
       </DropdownMenu.Group>
     </DropdownMenu.Content>
   </DropdownMenu.Root>

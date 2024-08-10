@@ -1,10 +1,8 @@
 <script lang="ts">
-  import { mount, onMount } from "svelte";
-  import type { LogEntry } from "../types/LogEntry";
   import { fetchLogs } from "../services/logService";
-  import LogEntryComponent from "./LogEntryComponent.svelte";
   import { filters } from "../stores/Filters.svelte";
-  import FilterPanel from "./FilterPanel.svelte";
+  import type { LogEntry } from "../types/LogEntry";
+  import LogEntryComponent from "./LogEntryComponent.svelte";
 
   const PAGE_SIZE = 50;
   let page = $state(1);
@@ -53,7 +51,14 @@
         pageSize: PAGE_SIZE.toString(),
       });
       const newLogs = await fetchLogs(fullQueryParams.toString());
-      logs = append ? [...logs, ...newLogs] : newLogs;
+      if (append) {
+        if (newLogs.length > 0) {
+          logs = [...logs, ...newLogs];
+          page++;
+        }
+      } else {
+        logs = newLogs;
+      }
     } catch (err) {
       error = "Failed to load logs";
     } finally {
@@ -61,22 +66,13 @@
     }
   }
 
-  function loadMoreLogs() {
-    page++;
-    loadLogs(true);
-  }
-
   function handleScroll(event: Event) {
     const target = event.target as HTMLDivElement;
     if (target.scrollHeight - target.scrollTop <= target.clientHeight + 100) {
-      loadMoreLogs();
+      loadLogs(true);
     }
   }
 </script>
-
-<p>
-  startDate: {filters.startDate} ({typeof filters.startDate})
-</p>
 
 <div onscroll={handleScroll} class=" bg-gray-100 p-4 flex-1 overflow-y-auto">
   {#each logs as log}
