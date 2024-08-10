@@ -2,6 +2,9 @@ package database
 
 import (
 	"database/sql"
+	"errors"
+	"fmt"
+	"os"
 	"strings"
 	"time"
 
@@ -14,6 +17,17 @@ type SQLiteDB struct {
 }
 
 func NewSQLiteDB(dbPath string) (*SQLiteDB, error) {
+	return OpenSQLiteDB(dbPath)
+}
+
+func OpenSQLiteDBIfExists(dbPath string) (*SQLiteDB, error) {
+	if _, err := os.Stat(dbPath); errors.Is(err, os.ErrNotExist) {
+		return nil, fmt.Errorf("database file does not exist: %w", err)
+	}
+	return OpenSQLiteDB(dbPath)
+}
+
+func OpenSQLiteDB(dbPath string) (*SQLiteDB, error) {
 	db, err := sql.Open("sqlite3", dbPath)
 	if err != nil {
 		return nil, err

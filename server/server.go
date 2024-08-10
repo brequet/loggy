@@ -15,18 +15,12 @@ type Server struct {
 	logger *slog.Logger
 }
 
-func NewServer(port int, logger *slog.Logger) (*Server, error) {
-	// TODO: check if db exists
-	db, err := database.NewSQLiteDB("loggy.db")
-	if err != nil {
-		return nil, fmt.Errorf("failed to initialize database: %v", err)
-	}
-
+func NewServer(port int, db *database.SQLiteDB, logger *slog.Logger) *Server {
 	return &Server{
 		port:   port,
 		db:     db,
 		logger: logger,
-	}, nil
+	}
 }
 
 func (s *Server) Start() error {
