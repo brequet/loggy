@@ -3,44 +3,18 @@
   import { Button } from "$lib/components/ui/button";
   import * as Sheet from "$lib/components/ui/sheet";
   import { fetchAppNames } from "$lib/services/logService";
+  import { allLogLevels } from "$lib/types/LogEntry";
   import { Filter } from "lucide-svelte";
   import { onMount } from "svelte";
   import { filters } from "../stores/Filters.svelte";
-  import DateTimeInput from "./filter/DateTimeInput.svelte";
-  import ListInput from "./filter/ListInput.svelte";
   import ChoiceList from "./filter/ChoiceList.svelte";
-  import { allLogLevels } from "$lib/types/LogEntry";
+  import DateTimeInput from "./filter/DateTimeInput.svelte";
 
   let allAppsName: string[] = [];
 
   onMount(async () => {
     allAppsName = await fetchAppNames();
   });
-
-  let appNameInput = "";
-  let levelInput = "";
-
-  function addAppName() {
-    if (appNameInput && !filters.appNames.includes(appNameInput)) {
-      filters.appNames = [...filters.appNames, appNameInput];
-      appNameInput = "";
-    }
-  }
-
-  function removeAppName(name: string) {
-    filters.appNames = filters.appNames.filter((app) => app !== name);
-  }
-
-  function addLevel() {
-    if (levelInput && !filters.levels.includes(levelInput)) {
-      filters.levels = [...filters.levels, levelInput];
-      levelInput = "";
-    }
-  }
-
-  function removeLevel(level: string) {
-    filters.levels = filters.levels.filter((l) => l !== level);
-  }
 
   function resetFilters() {
     filters.reset();

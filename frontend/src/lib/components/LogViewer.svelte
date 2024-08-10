@@ -14,8 +14,9 @@
   let error = $state<string | null>("null");
 
   let filtersChangedDate = $derived.by(() => {
+    // trick to force recomputation of the derived store, else variable are ignored => optimized by compiler
     const { appNames, levels, startDate, endDate } = filters;
-
+    JSON.stringify({ appNames, levels, startDate, endDate });
     return Date.now();
   });
 

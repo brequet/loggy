@@ -18,7 +18,6 @@
         } else {
             selectedChoices = selectedChoices.filter((c) => c !== choice);
         }
-        console.log(selectedChoices);
     }
 </script>
 
