@@ -67,7 +67,6 @@
   }
 
   function handleScroll(event: Event) {
-    console.log("handleScroll");
     const target = event.target as HTMLDivElement;
     if (target.scrollHeight - target.scrollTop <= target.clientHeight + 100) {
       loadLogs(true);
