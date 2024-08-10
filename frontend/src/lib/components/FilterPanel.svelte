@@ -44,7 +44,7 @@
       <Filter class="w-5 h-5" />
     </Button>
   </Sheet.Trigger>
-  <Sheet.Content>
+  <Sheet.Content shouldBlur={false}>
     <Sheet.Header>
       <Sheet.Title>Logs Filtering</Sheet.Title>
       <Sheet.Description>
