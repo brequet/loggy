@@ -1,8 +1,8 @@
 class Filters {
   appNames = $state<string[]>([]);
   levels = $state<string[]>([]);
-  startDate = $state<Date | null>(null);
-  endDate = $state<Date | null>(null);
+  startDate = $state<string | null>(null);
+  endDate = $state<string | null>(null);
 
   reset() {
     this.appNames = [];
