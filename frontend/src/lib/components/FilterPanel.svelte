@@ -6,6 +6,7 @@
   import { Filter } from "lucide-svelte";
   import { filters } from "../stores/Filters.svelte";
   import ListInput from "./filter/ListInput.svelte";
+  import { Badge } from "$lib/components/ui/badge";
   import DateTimeInput from "./filter/DateTimeInput.svelte";
 
   let appNameInput = "";
@@ -40,8 +41,15 @@
 
 <Sheet.Root>
   <Sheet.Trigger>
-    <Button variant="outline" size="icon">
+    <Button variant="outline" size="icon" class="relative">
       <Filter class="w-5 h-5" />
+      {#if filters.activeFilterCount > 0}
+        <Badge
+          class="absolute -top-2 -right-2 px-2 min-w-[1.2rem] h-[1.2rem] text-[0.7rem] flex items-center justify-center"
+        >
+          {filters.activeFilterCount}
+        </Badge>
+      {/if}
     </Button>
   </Sheet.Trigger>
   <Sheet.Content shouldBlur={false}>
