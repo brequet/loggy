@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/brequet/loggy/config"
 	"github.com/brequet/loggy/database"
 	"github.com/brequet/loggy/entity"
 	"github.com/brequet/loggy/parser"
@@ -50,6 +51,28 @@ func (s *Ingester) IngestLogs(inputDir string) error {
 			s.logger.Debug("Ingesting log file", "logFile", logFile)
 
 			if err := s.ingestLogFile(app, logFile); err != nil {
+				return fmt.Errorf("failed to ingest log file %s: %w", logFile, err)
+			}
+		}
+	}
+
+	return nil
+}
+
+func (s *Ingester) IngestLogsForAppLogDirs(appLogDirs []config.AppLogDir) error {
+	for _, appLogDir := range appLogDirs {
+		s.logger.Debug("Ingesting app log dir", "appLogDir", appLogDir)
+
+		logFiles, err := listLogFiles(appLogDir.Path)
+		if err != nil {
+			return fmt.Errorf("failed to list log files for %s: %w", appLogDir.Name, err)
+		}
+		s.logger.Debug("Found log files", "logFiles count", len(logFiles))
+
+		for _, logFile := range logFiles {
+			s.logger.Debug("Ingesting log file", "logFile", logFile)
+
+			if err := s.ingestLogFile(appLogDir.Name, logFile); err != nil {
 				return fmt.Errorf("failed to ingest log file %s: %w", logFile, err)
 			}
 		}

@@ -3,6 +3,7 @@ package parser
 import (
 	"bufio"
 	"fmt"
+	"log/slog"
 	"os"
 	"regexp"
 	"strings"
@@ -20,9 +21,10 @@ type LogFormat struct {
 
 type Parser struct {
 	formats []*LogFormat
+	logger  *slog.Logger
 }
 
-func NewParser(additionalParsersConf []config.ParserFormat) (*Parser, error) {
+func NewParser(appLogDirs []config.ParserLogFormat, logger *slog.Logger) (*Parser, error) {
 	formats := []*LogFormat{
 		{
 			Name:       "StandardFormat",
@@ -33,7 +35,7 @@ func NewParser(additionalParsersConf []config.ParserFormat) (*Parser, error) {
 		},
 	}
 
-	for _, format := range additionalParsersConf {
+	for _, format := range appLogDirs {
 		logFormat, err := parseToLogFormat(format.Name, format.DateFormat, format.RegexParser)
 		if err != nil {
 			return nil, fmt.Errorf("failed to parse format: %w", err)
@@ -43,6 +45,7 @@ func NewParser(additionalParsersConf []config.ParserFormat) (*Parser, error) {
 
 	return &Parser{
 		formats,
+		logger,
 	}, nil
 }
 

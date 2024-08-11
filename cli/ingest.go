@@ -13,51 +13,51 @@ import (
 )
 
 func newIngestCommand() *cobra.Command {
+	var configFile, targetDir string
+
 	cmd := &cobra.Command{
-		Use:   "ingest <input_directory>",
+		Use:   "ingest",
 		Short: "Ingest log files into the database",
-		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			inputDir := args[0]
-			if inputDir == "" {
-				return errors.New("input directory is required")
+			db, err := database.NewSQLiteDB("loggy.db")
+			if err != nil {
+				return fmt.Errorf("failed to initialize database: %v", err)
 			}
 
-			ingestService, err := initializeForIngester()
+			err = db.CleanLogEntries()
+			if err != nil {
+				db.Close()
+				return fmt.Errorf("failed to clean log entries: %v", err)
+			}
+
+			conf, err := config.LoadConfig(configFile, slog.Default())
+			if err != nil {
+				return fmt.Errorf("failed to load config: %v", err)
+			}
+
+			parseService, err := parser.NewParser(conf.Parser.Formats, slog.Default())
+			if err != nil {
+				return fmt.Errorf("failed to initialize parser: %v", err)
+			}
+
+			ingestService := ingester.NewIngester(db, parseService, slog.Default())
+
 			if err != nil {
 				return err
 			}
 
-			return ingestService.IngestLogs(inputDir)
+			if targetDir != "" {
+				return ingestService.IngestLogs(targetDir)
+			} else if len(conf.Parser.AppLogDirs) > 0 {
+				return ingestService.IngestLogsForAppLogDirs(conf.Parser.AppLogDirs)
+			} else {
+				return errors.New("no target directory or app log dirs specified")
+			}
 		},
 	}
 
+	cmd.Flags().StringVarP(&targetDir, "target", "d", "", "Path to the target directory")
+	cmd.Flags().StringVarP(&configFile, "config", "c", "", "Path to the configuration file")
+
 	return cmd
-}
-
-func initializeForIngester() (*ingester.Ingester, error) {
-	db, err := database.NewSQLiteDB("loggy.db")
-	if err != nil {
-		return nil, fmt.Errorf("failed to initialize database: %v", err)
-	}
-
-	err = db.CleanLogEntries()
-	if err != nil {
-		db.Close()
-		return nil, fmt.Errorf("failed to clean log entries: %v", err)
-	}
-
-	conf, err := config.LoadConfig()
-	if err != nil {
-		return nil, fmt.Errorf("failed to load config: %v", err)
-	}
-
-	parseService, err := parser.NewParser(conf.Parser.Formats)
-	if err != nil {
-		return nil, fmt.Errorf("failed to initialize parser: %v", err)
-	}
-
-	ingestService := ingester.NewIngester(db, parseService, slog.Default())
-
-	return ingestService, nil
 }

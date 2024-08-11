@@ -11,6 +11,8 @@ import (
 )
 
 func newServeCommand() *cobra.Command {
+	var configFile string
+
 	cmd := &cobra.Command{
 		Use:   "serve",
 		Short: "Start the Loggy server",
@@ -20,7 +22,7 @@ func newServeCommand() *cobra.Command {
 				return fmt.Errorf("failed to open database: %v", err)
 			}
 
-			conf, err := config.LoadConfig()
+			conf, err := config.LoadConfig(configFile, slog.Default())
 			if err != nil {
 				return fmt.Errorf("failed to load config: %v", err)
 			}
@@ -29,6 +31,8 @@ func newServeCommand() *cobra.Command {
 			return server.Start()
 		},
 	}
+
+	cmd.Flags().StringVarP(&configFile, "config", "c", "", "Path to the configuration file")
 
 	return cmd
 }
