@@ -52,7 +52,7 @@ func initializeForIngester() (*ingester.Ingester, error) {
 		return nil, fmt.Errorf("failed to load config: %v", err)
 	}
 
-	parseService, err := parser.NewParser(conf.Parsers)
+	parseService, err := parser.NewParser(conf.Parser.Formats)
 	if err != nil {
 		return nil, fmt.Errorf("failed to initialize parser: %v", err)
 	}

@@ -10,7 +10,7 @@ import (
 //go:embed resources/conf.yml
 var defaultConfigFile embed.FS
 
-type Parser struct {
+type ParserFormat struct {
 	Name        string `yaml:"Name"`
 	DateFormat  string `yaml:"DateFormat"`
 	RegexParser string `yaml:"RegexParser"`
@@ -20,7 +20,10 @@ type Config struct {
 	Server struct {
 		Port int `yaml:"port"`
 	} `yaml:"server"`
-	Parsers []Parser `yaml:"parsers"`
+
+	Parser struct {
+		Formats []ParserFormat `yaml:"formats"`
+	} `yaml:"parser"`
 }
 
 func LoadConfig() (*Config, error) {

@@ -22,7 +22,7 @@ type Parser struct {
 	formats []*LogFormat
 }
 
-func NewParser(additionalParsersConf []config.Parser) (*Parser, error) {
+func NewParser(additionalParsersConf []config.ParserFormat) (*Parser, error) {
 	formats := []*LogFormat{
 		{
 			Name:       "StandardFormat",
